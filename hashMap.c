@@ -154,6 +154,9 @@ int* hashMapGet(HashMap* map, const char* key)
     //get hash container index
     int index = HASH_FUNCTION(key) % map->capacity;
 
+    //check if valid index
+    if(index < 0) { index += map->capacity; }
+
     //store first hash link
     HashLink * current = map->table[index];
 
@@ -252,6 +255,9 @@ void hashMapPut(HashMap* map, const char* key, int value)
     //get hash container index
     int index = HASH_FUNCTION(key) % map->capacity;
 
+    //check if valid index
+    if(index < 0) { index += map->capacity; }
+
     //store first hash link of the correct bucket
     HashLink * current = map->table[index];
 
@@ -293,6 +299,9 @@ void hashMapRemove(HashMap* map, const char* key)
 {
     //get hash container index
     int index = HASH_FUNCTION(key) % map->capacity;
+
+    //check if valid index
+    if(index < 0) { index += map->capacity; }
 
     //store first hash link of the correct bucket
     HashLink * current = map->table[index];
@@ -341,6 +350,9 @@ int hashMapContainsKey(HashMap* map, const char* key)
 {
     //get hash container index
     int index = HASH_FUNCTION(key) % map->capacity;
+
+    //check if valid index
+    if(index < 0) { index += map->capacity; }
 
     //store first hash link of the correct bucket
     HashLink * current = map->table[index];
