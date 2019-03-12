@@ -70,6 +70,12 @@ void loadDictionary(FILE* file, HashMap* map)
     }
 }
 
+/**
+ * Returns the minimum value of the three input parameters
+ * @param int a
+ * @param int b
+ * @param int c
+ */
 int minimum(int a, int b, int c) {
 
     if (a < b) {
@@ -85,21 +91,35 @@ int minimum(int a, int b, int c) {
 
 }
 
-// len_s and len_t are the number of characters in string s and t respectively
+/**
+ * Returns the Levenshtein Distance between the provided words
+ * @param s - word 1
+ * @param lenS - length of word 1
+ * @param t - word 2
+ * @param lenT - length of word 
+ * 
+ * Code was adapted from Wikipedia for the LEvenshtein Distance
+ */
 int LevenshteinDistance(const char *s, int lenS, const char *t, int lenT) { 
+    
+    // int to store the cost per letter
     int cost;
 
-    /* base case: empty strings */
+    // Base Case:   When one string is empty, return the length of the other
+    //              as that is the number of removals (or insertions) needed
+    //              to make the words match
     if (lenS == 0) return lenT;
     if (lenT == 0) return lenS;
 
-    /* test if last characters of the strings match */
+    // Test if last characters of the strings match
+    // If they dont match, a change has to be made to that character to make
+    // thus a cost of 1
     if (s[lenS-1] == t[lenT-1])
         cost = 0;
     else
         cost = 1;
 
-    /* return minimum of delete char from s, delete char from t, and delete char from both */
+    /// Return minimum of delete char from s, delete char from t, and delete char from both
     return minimum(LevenshteinDistance(s, lenS - 1, t, lenT    ) + 1,
                    LevenshteinDistance(s, lenS    , t, lenT - 1) + 1,
                    LevenshteinDistance(s, lenS - 1, t, lenT - 1) + cost);
@@ -131,8 +151,16 @@ void traverseMap(HashMap* map, char* inputWord, char* suggestions[5]) {
 
             //check if distance is small enough to be a suggestion
             if (distance <= max) {
+
+                //reassign the max to filter out future words base
+                //on how closely the new word matches
                 max = distance;
+
+                //assign word to suggestions array
                 suggestions[x] = current->key;
+
+                //if the counter (x) exceeds the array size, reset
+                //to zero
                 x++;
                 if (x == 5) { x = 0; }
             }
@@ -140,6 +168,38 @@ void traverseMap(HashMap* map, char* inputWord, char* suggestions[5]) {
             //go to next link
             current = current->next;
         }
+    }
+}
+
+/**
+ * Convert the provided string to lowercase for dictionary comparisons
+ * Additionally, set the quit flag to 1 if an invalid character is provided
+ * @param inpputBuffer - Provided word
+ * @param *quit - quit flag
+ */
+void lowerCase(char inputBuffer[256], int *quit) {
+    int i = 0;
+    while (inputBuffer[i] != '\0') {
+
+        //uppercase letter, convert to lower
+        if (inputBuffer[i] >= 'A' && inputBuffer[i] <= 'Z') {
+            inputBuffer[i] += 32;
+        }
+
+        //lowercase letter
+        else if (inputBuffer[i] >= 'a' && inputBuffer[i] <= 'z') {
+            //do nothing
+        }
+
+        //invalid character
+        else {
+            printf("Invalid Input!\n");
+            *quit = 1;
+            break;
+        }
+
+        //increment char counter
+        i++;
     }
 }
 
@@ -174,32 +234,10 @@ int main(int argc, const char** argv)
         printf("Enter a word or \"quit\" to quit: ");
         scanf("%s", inputBuffer);
 
-        //check all characters are letters and convert to lowercase
-        i = 0;
-        while (inputBuffer[i] != '\0') {
+        //convert to lowercase and set quit if an invalid char is provided
+        lowerCase(inputBuffer, &quit);
 
-            //uppercase letter, convert to lower
-            if (inputBuffer[i] >= 'A' && inputBuffer[i] <= 'Z') {
-                inputBuffer[i] += 32;
-            }
-
-            //lowercase letter
-            else if (inputBuffer[i] >= 'a' && inputBuffer[i] <= 'z') {
-                //do nothing
-            }
-
-            //invalid character
-            else {
-                printf("Invalid Input!\n");
-                quit = 1;
-                break;
-            }
-
-            //increment char counter
-            i++;
-        }
-
-        //check if user is quiting
+        //check if user would like to quit
         if (strcmp(inputBuffer, "quit") == 0){
             quit = 1;
         }
@@ -214,8 +252,9 @@ int main(int argc, const char** argv)
 
             printf("The word \"%s\" is not spelled correctly.\n", inputBuffer);
 
-            //traverse hash table, putting the levenshtein distances into the links
-            //suggestions will contain the 5 closest matches
+            //traverse hash table, calculating the levenshtein distances of each
+            //word in the dictionary against the provided word. Suggestions array 
+            //will contain the 5 closest matches
             traverseMap(map, inputBuffer, suggestions);
 
             //print suggestions
@@ -226,6 +265,7 @@ int main(int argc, const char** argv)
         }
     }
     
+    //Delete the dictionary map once the user quits the program
     hashMapDelete(map);
     return 0;
 }
